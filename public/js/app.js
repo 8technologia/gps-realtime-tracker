@@ -105,6 +105,77 @@ const App = {
         document.querySelector('#detailModal .modal-overlay')?.addEventListener('click', () => {
             document.getElementById('detailModal')?.classList.remove('active');
         });
+
+        // Mobile: Bottom sheet toggle
+        this._initMobileBottomSheet();
+    },
+
+    /**
+     * Initialize mobile bottom sheet behavior
+     */
+    _initMobileBottomSheet() {
+        const devicePanel = document.getElementById('devicePanel');
+        const panelHeader = document.querySelector('.panel-header');
+        
+        if (!devicePanel || !panelHeader) return;
+
+        // Check if mobile
+        const isMobile = () => window.innerWidth <= 768;
+
+        // Toggle on header tap
+        panelHeader.addEventListener('click', (e) => {
+            if (!isMobile()) return;
+            e.stopPropagation();
+            devicePanel.classList.toggle('expanded');
+        });
+
+        // Close bottom sheet when clicking on map (outside)
+        document.getElementById('mapContainer')?.addEventListener('click', () => {
+            if (isMobile() && devicePanel.classList.contains('expanded')) {
+                devicePanel.classList.remove('expanded');
+            }
+        });
+
+        // Close bottom sheet after selecting a device
+        const deviceList = document.getElementById('deviceList');
+        deviceList?.addEventListener('click', (e) => {
+            if (!isMobile()) return;
+            const deviceItem = e.target.closest('.device-item');
+            if (deviceItem) {
+                // Collapse after short delay to allow the click to register
+                setTimeout(() => {
+                    devicePanel.classList.remove('expanded');
+                }, 150);
+            }
+        });
+
+        // Swipe gesture support
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        devicePanel.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        devicePanel.addEventListener('touchend', (e) => {
+            if (!isMobile()) return;
+            touchEndY = e.changedTouches[0].screenY;
+            const diff = touchStartY - touchEndY;
+            
+            // Swipe up = expand, swipe down = collapse
+            if (diff > 50) {
+                devicePanel.classList.add('expanded');
+            } else if (diff < -50) {
+                devicePanel.classList.remove('expanded');
+            }
+        }, { passive: true });
+
+        // Handle orientation change
+        window.addEventListener('resize', () => {
+            if (!isMobile()) {
+                devicePanel.classList.remove('expanded');
+            }
+        });
     },
 
     /**

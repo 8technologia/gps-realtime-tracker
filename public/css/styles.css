@@ -1036,31 +1036,382 @@ body {
 }
 
 /* =====================================================
-   Responsive
+   Responsive - Mobile First Redesign
    ===================================================== */
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+    :root {
+        --panel-width: 300px;
+    }
+}
+
+/* Mobile breakpoint - Complete redesign */
 @media (max-width: 768px) {
     :root {
-        --panel-width: 280px;
+        --panel-width: 100%;
+        --header-height: 56px;
+    }
+
+    /* ========== Header Mobile ========== */
+    .header {
+        padding: 0 12px;
+        gap: 8px;
+    }
+
+    .header-brand {
+        gap: 8px;
+    }
+
+    .logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .logo svg {
+        width: 20px;
+        height: 20px;
     }
 
     .header-title {
-        display: none;
+        font-size: 1rem;
+        display: block; /* Keep title visible on mobile */
     }
 
     .header-center {
-        gap: 10px;
+        gap: 8px;
+    }
+
+    .btn-live {
+        padding: 6px 10px;
+        font-size: 0.7rem;
     }
 
     .last-update {
         display: none;
     }
 
+    .header-status {
+        gap: 8px;
+    }
+
+    .status-indicator .status-text {
+        display: none;
+    }
+
+    .device-count {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+    }
+
+    /* ========== Main Layout Mobile ========== */
+    .main-content {
+        flex-direction: column;
+    }
+
+    /* ========== Device Panel as Bottom Sheet ========== */
     .device-panel {
-        position: absolute;
+        position: fixed;
         left: 0;
-        top: 0;
+        right: 0;
         bottom: 0;
-        z-index: 50;
+        top: auto;
+        width: 100%;
+        height: 45vh;
+        max-height: 60vh;
+        min-height: 180px;
+        border-right: none;
+        border-top: 1px solid var(--border-color);
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        z-index: 60;
+        transform: translateY(calc(100% - 60px));
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .device-panel.expanded {
+        transform: translateY(0);
+    }
+
+    /* Bottom sheet handle */
+    .device-panel::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: var(--text-muted);
+        border-radius: 2px;
+        z-index: 10;
+    }
+
+    .panel-header {
+        padding: 24px 16px 12px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .panel-header h2 {
+        font-size: 0.9rem;
+    }
+
+    /* Add expand icon indicator */
+    .panel-header::after {
+        content: '▲';
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-left: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .device-panel.expanded .panel-header::after {
+        transform: rotate(180deg);
+    }
+
+    .search-box {
+        margin: 8px 12px 12px;
+    }
+
+    .search-box input {
+        padding: 10px 12px 10px 36px;
+        font-size: 0.9rem;
+    }
+
+    .device-list {
+        padding: 4px 12px 16px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .device-item {
+        padding: 14px 16px;
+        margin-bottom: 8px;
+    }
+
+    .device-item:hover {
+        transform: none; /* Disable hover transform on mobile */
+    }
+
+    .device-item:active {
+        background: rgba(0, 212, 255, 0.08);
+        transform: scale(0.98);
+    }
+
+    .device-name {
+        font-size: 0.9rem;
+    }
+
+    .device-status {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+    }
+
+    .device-info {
+        font-size: 0.8rem;
+        gap: 12px;
+    }
+
+    /* ========== Map Container Mobile ========== */
+    .map-container {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 60px; /* Space for collapsed bottom sheet */
+        z-index: 1;
+    }
+
+    /* ========== Device Info Card Mobile ========== */
+    .device-info-card {
+        position: fixed;
+        top: auto;
+        bottom: 72px; /* Above bottom sheet */
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: none;
+        max-height: 50vh;
+        overflow-y: auto;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
+        z-index: 55;
+    }
+
+    .info-card-header {
+        padding: 12px 14px;
+        gap: 10px;
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 1;
+    }
+
+    .info-card-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1.2rem;
+    }
+
+    .info-card-title span:first-child {
+        font-size: 0.95rem;
+    }
+
+    .info-card-close {
+        width: 32px;
+        height: 32px;
+        font-size: 1.5rem;
+    }
+
+    .info-card-body {
+        padding: 8px 14px;
+    }
+
+    .info-card-row {
+        padding: 7px 0;
+    }
+
+    .info-card-label {
+        font-size: 0.75rem;
+    }
+
+    .info-card-value {
+        font-size: 0.85rem;
+    }
+
+    .info-card-actions {
+        padding: 10px 14px 14px;
+        gap: 8px;
+    }
+
+    .info-card-actions .btn {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+    }
+
+    /* ========== Route Legend Mobile ========== */
+    .route-legend {
+        bottom: 72px;
+        left: 8px;
+        right: auto;
+        padding: 10px 14px;
+        font-size: 0.75rem;
+    }
+
+    .legend-title {
+        font-size: 0.7rem;
+    }
+
+    .legend-item {
+        font-size: 0.75rem;
+    }
+
+    /* ========== Map Controls Mobile ========== */
+    .map-controls {
+        top: 12px;
+        right: 12px;
+    }
+
+    .map-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* ========== Modals Mobile ========== */
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        max-height: 90vh;
+        margin: 0 auto;
+        border-radius: var(--radius-lg);
+    }
+
+    .modal-lg {
+        max-width: none;
+    }
+
+    .modal-header {
+        padding: 16px;
+    }
+
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: 16px;
+        max-height: calc(90vh - 60px);
+    }
+
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 12px 14px;
+        font-size: 16px; /* Prevent iOS zoom on focus */
+    }
+
+    .history-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .history-stat-value {
+        font-size: 1.3rem;
+    }
+
+    /* ========== Buttons Mobile ========== */
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-sm {
+        padding: 10px 14px;
+    }
+
+    /* ========== Touch Optimizations ========== */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Increase touch targets */
+    button, 
+    .device-item,
+    input,
+    select {
+        min-height: 44px;
+    }
+
+    /* Mapbox controls touch-friendly */
+    .mapboxgl-ctrl-group button {
+        width: 40px !important;
+        height: 40px !important;
+    }
+}
+
+/* Small mobile (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .header-title {
+        display: none;
+    }
+
+    .device-info-card {
+        bottom: 68px;
+    }
+
+    .info-card-actions {
+        flex-direction: column;
+    }
+
+    .info-card-actions .btn {
+        width: 100%;
     }
 }
 

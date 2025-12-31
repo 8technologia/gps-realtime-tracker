@@ -252,11 +252,23 @@ const MapManager = {
 
         // Auto-center on selected device when its position updates
         if (this.selectedDeviceId && this.selectedDeviceId == deviceId && !this.liveMode) {
-            // Smoothly pan to the new position of the selected device
-            this.map.easeTo({
-                center: lngLat,
-                duration: 500
-            });
+            // On mobile, offset so marker appears above info card
+            if (this._isMobile()) {
+                const mapHeight = this.map.getContainer().clientHeight;
+                const offsetPixels = mapHeight * 0.25;
+                const centerPoint = this.map.project(lngLat);
+                centerPoint.y -= offsetPixels;
+                const offsetLngLat = this.map.unproject(centerPoint);
+                this.map.easeTo({
+                    center: offsetLngLat,
+                    duration: 500
+                });
+            } else {
+                this.map.easeTo({
+                    center: lngLat,
+                    duration: 500
+                });
+            }
         }
 
         // Auto-fit bounds in LIVE mode when device moves (only if no device is selected)
@@ -606,16 +618,44 @@ const MapManager = {
     },
 
     /**
-     * Focus on a specific device
+     * Check if we're on mobile viewport
+     */
+    _isMobile() {
+        return window.innerWidth <= 768;
+    },
+
+    /**
+     * Focus on a specific device with mobile-aware positioning
      */
     focusDevice(deviceId) {
         const marker = this.markers[deviceId];
         if (marker) {
-            this.map.flyTo({
-                center: marker.getLngLat(),
-                zoom: 15,
-                duration: 1000
-            });
+            const lngLat = marker.getLngLat();
+
+            if (this._isMobile()) {
+                // On mobile, offset the center so marker appears in upper half
+                // Info card takes up roughly bottom 50% of visible map area
+                const mapHeight = this.map.getContainer().clientHeight;
+                const offsetPixels = mapHeight * 0.25; // Move center up by 25% of map height
+
+                // Convert center point to pixels, offset, then back to coordinates
+                const centerPoint = this.map.project(lngLat);
+                centerPoint.y -= offsetPixels;
+                const offsetLngLat = this.map.unproject(centerPoint);
+
+                this.map.flyTo({
+                    center: offsetLngLat,
+                    zoom: 15,
+                    duration: 1000
+                });
+            } else {
+                this.map.flyTo({
+                    center: lngLat,
+                    zoom: 15,
+                    duration: 1000
+                });
+            }
+
             this.showInfoCard(deviceId);
         }
     },
