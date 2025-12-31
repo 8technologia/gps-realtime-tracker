@@ -78,10 +78,10 @@ nano .env
 
 ```bash
 # Build và chạy container
-docker-compose up -d
+docker compose up -d
 
 # Xem logs (optional)
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ### Bước 5: Truy cập ứng dụng
@@ -92,19 +92,19 @@ Mở trình duyệt và truy cập: **<http://localhost:8801>**
 
 ```bash
 # Dừng ứng dụng
-docker-compose down
+docker compose down
 
 # Khởi động lại
-docker-compose restart
+docker compose restart
 
 # Rebuild khi có thay đổi code
-docker-compose up -d --build
+docker compose up -d --build
 
 # Xem trạng thái container
-docker-compose ps
+docker compose ps
 
 # Xem logs realtime
-docker-compose logs -f gps-tracker
+docker compose logs -f gps-tracker
 ```
 
 ---
