@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  gps-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gps-realtime-tracker
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8801}:${PORT:-8801}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT:-8801}
+      - TRACCAR_URL=${TRACCAR_URL}
+      - TRACCAR_EMAIL=${TRACCAR_EMAIL}
+      - TRACCAR_PASSWORD=${TRACCAR_PASSWORD}
+      - MAPBOX_TOKEN=${MAPBOX_TOKEN}
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${PORT:-8801}/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    name: gps-tracker-network

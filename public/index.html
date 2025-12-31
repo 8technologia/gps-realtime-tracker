@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Tracking - Theo dõi xe thời gian thực</title>
+    <meta name="description" content="Hệ thống theo dõi GPS thời gian thực cho phương tiện vận tải">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Mapbox GL CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-brand">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+            </div>
+            <h1 class="header-title">GPS Tracking</h1>
+        </div>
+
+        <div class="header-center">
+            <button class="btn btn-live" id="liveBtn">
+                <span class="live-dot"></span>
+                LIVE
+            </button>
+            <span class="last-update" id="lastUpdate">Cập nhật: --</span>
+        </div>
+
+        <div class="header-status">
+            <span class="status-indicator" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Đang kết nối...</span>
+            </span>
+            <span class="device-count" id="deviceCount">0 thiết bị</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content no-footer">
+        <!-- Device Panel (Fixed, no toggle) -->
+        <aside class="device-panel" id="devicePanel">
+            <div class="panel-header">
+                <h2>Danh sách xe</h2>
+            </div>
+
+            <div class="search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm xe...">
+            </div>
+
+            <div class="device-list" id="deviceList">
+                <!-- Devices will be rendered here -->
+                <div class="loading-placeholder">
+                    <div class="spinner"></div>
+                    <span>Đang tải dữ liệu...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Map Container -->
+        <div class="map-container" id="mapContainer">
+            <div id="map"></div>
+
+            <!-- Fixed Device Info Card -->
+            <div class="device-info-card" id="deviceInfoCard" style="display: none;">
+                <div class="info-card-header">
+                    <div class="info-card-icon">🚗</div>
+                    <div class="info-card-title">
+                        <span id="infoCardName">--</span>
+                        <span class="info-card-status" id="infoCardStatus">--</span>
+                    </div>
+                    <button class="info-card-close" id="infoCardClose">&times;</button>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-card-row">
+                        <span class="info-card-label">Tốc độ</span>
+                        <span class="info-card-value" id="infoCardSpeed">-- km/h</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Tọa độ</span>
+                        <span class="info-card-value" id="infoCardCoords">--, --</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Vệ tinh</span>
+                        <span class="info-card-value" id="infoCardSat">--</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Nhà mạng</span>
+                        <span class="info-card-value" id="infoCardOperator">--</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Tín hiệu</span>
+                        <span class="info-card-value" id="infoCardSignal">--</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Uptime</span>
+                        <span class="info-card-value" id="infoCardUptime">--</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Km hôm nay</span>
+                        <span class="info-card-value" id="infoCardTodayKm">--</span>
+                    </div>
+                    <div class="info-card-row">
+                        <span class="info-card-label">Cập nhật</span>
+                        <span class="info-card-value" id="infoCardTime">--</span>
+                    </div>
+                </div>
+                <div class="info-card-actions">
+                    <button class="btn btn-primary btn-sm" id="routeTodayBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L19 21l-7-4-7 4 7-19z" />
+                        </svg>
+                        Lộ trình hôm nay
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="routeCustomBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        Lộ trình tuỳ chỉnh
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="followBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+                        </svg>
+                        Theo dõi xe
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Route Legend -->
+            <div class="route-legend" id="routeLegend" style="display: none;">
+                <div class="legend-title">Chú giải lộ trình</div>
+                <div class="legend-items">
+                    <div class="legend-item"><span class="legend-color" style="background:#00c853"></span> Điểm bắt đầu
+                    </div>
+                    <div class="legend-item"><span class="legend-color" style="background:#ff9100"></span> Giữa hành
+                        trình</div>
+                    <div class="legend-item"><span class="legend-color" style="background:#d50000"></span> Điểm kết thúc
+                    </div>
+                    <div class="legend-item" style="margin-top:6px; font-size:0.75rem; color:var(--text-muted);">
+                        ⟿ Đường dash chạy theo hướng di chuyển
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Chi tiết xe</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Detail content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Route Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Lộ trình tuỳ chỉnh - <span id="historyDeviceName">--</span></h3>
+                <button class="modal-close" id="historyClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-form">
+                    <input type="hidden" id="historyDevice" value="">
+                    <div class="form-group">
+                        <label>Từ ngày/giờ</label>
+                        <div class="form-row">
+                            <input type="date" id="historyFromDate">
+                            <select id="historyFromHour">
+                                <option value="0">00:00</option>
+                                <option value="1">01:00</option>
+                                <option value="2">02:00</option>
+                                <option value="3">03:00</option>
+                                <option value="4">04:00</option>
+                                <option value="5">05:00</option>
+                                <option value="6">06:00</option>
+                                <option value="7">07:00</option>
+                                <option value="8">08:00</option>
+                                <option value="9">09:00</option>
+                                <option value="10">10:00</option>
+                                <option value="11">11:00</option>
+                                <option value="12">12:00</option>
+                                <option value="13">13:00</option>
+                                <option value="14">14:00</option>
+                                <option value="15">15:00</option>
+                                <option value="16">16:00</option>
+                                <option value="17">17:00</option>
+                                <option value="18">18:00</option>
+                                <option value="19">19:00</option>
+                                <option value="20">20:00</option>
+                                <option value="21">21:00</option>
+                                <option value="22">22:00</option>
+                                <option value="23">23:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Đến ngày/giờ</label>
+                        <div class="form-row">
+                            <input type="date" id="historyToDate">
+                            <select id="historyToHour">
+                                <option value="0">00:00</option>
+                                <option value="1">01:00</option>
+                                <option value="2">02:00</option>
+                                <option value="3">03:00</option>
+                                <option value="4">04:00</option>
+                                <option value="5">05:00</option>
+                                <option value="6">06:00</option>
+                                <option value="7">07:00</option>
+                                <option value="8">08:00</option>
+                                <option value="9">09:00</option>
+                                <option value="10">10:00</option>
+                                <option value="11">11:00</option>
+                                <option value="12">12:00</option>
+                                <option value="13">13:00</option>
+                                <option value="14">14:00</option>
+                                <option value="15">15:00</option>
+                                <option value="16">16:00</option>
+                                <option value="17">17:00</option>
+                                <option value="18">18:00</option>
+                                <option value="19">19:00</option>
+                                <option value="20">20:00</option>
+                                <option value="21">21:00</option>
+                                <option value="22">22:00</option>
+                                <option value="23">23:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="loadHistoryBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        Xem lộ trình
+                    </button>
+                </div>
+                <div class="history-stats" id="historyStats" style="display: none;">
+                    <!-- Stats will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/devices.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
