@@ -27,14 +27,34 @@
 - [Docker](https://docs.docker.com/get-docker/) (phiên bản 20.10+)
 - [Docker Compose](https://docs.docker.com/compose/install/) (phiên bản 2.0+)
 
-### Bước 1: Clone dự án
+### Bước 1: Cài đặt Git (nếu chưa có)
+
+```bash
+# Debian/Ubuntu/Armbian
+apt update && apt install git -y
+
+# CentOS/RHEL
+yum install git -y
+
+# Alpine Linux
+apk add git
+```
+
+### Bước 2: Clone dự án
 
 ```bash
 git clone https://github.com/8technologia/gps-realtime-tracker.git
 cd gps-realtime-tracker
 ```
 
-### Bước 2: Cấu hình biến môi trường
+> **💡 Không muốn cài Git?** Tải trực tiếp bằng wget:
+>
+> ```bash
+> wget https://github.com/8technologia/gps-realtime-tracker/archive/refs/heads/main.zip
+> unzip main.zip && cd gps-realtime-tracker-main
+> ```
+
+### Bước 3: Cấu hình biến môi trường
 
 ```bash
 # Sao chép file mẫu
@@ -54,7 +74,7 @@ nano .env
 | `MAPBOX_TOKEN` | Access token từ Mapbox | ✅ |
 | `PORT` | Port chạy ứng dụng (mặc định: 8801) | ❌ |
 
-### Bước 3: Khởi chạy
+### Bước 4: Khởi chạy
 
 ```bash
 # Build và chạy container
@@ -64,7 +84,7 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
-### Bước 4: Truy cập ứng dụng
+### Bước 5: Truy cập ứng dụng
 
 Mở trình duyệt và truy cập: **<http://localhost:8801>**
 
